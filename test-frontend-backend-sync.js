@@ -35,22 +35,27 @@ async function testFrontendBackendSync() {
       allTestsPassed = false;
     } else if (data && data.content) {
       const content = data.content;
-      
+
       // Check nested objects structure
-      const hasWalmartInfo = content.walmart_info && 
-                           content.walmart_info.text && 
-                           content.walmart_info.subtext;
-      const hasSellerInfo = content.seller_info && 
-                           content.seller_info.name && 
-                           typeof content.seller_info.rating === 'number';
-      const hasGuarantee = content.guarantee && 
-                          content.guarantee.text && 
-                          content.guarantee.subtext;
+      const hasWalmartInfo =
+        content.walmart_info &&
+        content.walmart_info.text &&
+        content.walmart_info.subtext;
+      const hasSellerInfo =
+        content.seller_info &&
+        content.seller_info.name &&
+        typeof content.seller_info.rating === "number";
+      const hasGuarantee =
+        content.guarantee &&
+        content.guarantee.text &&
+        content.guarantee.subtext;
 
       if (hasWalmartInfo && hasSellerInfo && hasGuarantee) {
         console.log("✅ Trust section structure is valid");
         console.log(`   Walmart: ${content.walmart_info.text}`);
-        console.log(`   Seller: ${content.seller_info.name} (${content.seller_info.rating}⭐)`);
+        console.log(
+          `   Seller: ${content.seller_info.name} (${content.seller_info.rating}⭐)`,
+        );
         console.log(`   Guarantee: ${content.guarantee.text}`);
       } else {
         console.log("❌ Trust section missing required nested objects");
@@ -80,12 +85,12 @@ async function testFrontendBackendSync() {
       allTestsPassed = false;
     } else if (data && data.content) {
       const content = data.content;
-      
+
       if (Array.isArray(content.images) && content.images.length > 0) {
         console.log("✅ Product gallery structure is valid");
         console.log(`   Title: ${content.title}`);
         console.log(`   Images: ${content.images.length} items`);
-        
+
         // Check first image structure
         const firstImage = content.images[0];
         if (firstImage.url && firstImage.title && firstImage.alt) {
@@ -122,36 +127,44 @@ async function testFrontendBackendSync() {
       allTestsPassed = false;
     } else if (data && data.content) {
       const content = data.content;
-      
+
       if (Array.isArray(content.reviews) && content.reviews.length >= 6) {
         console.log("✅ Customer reviews structure is valid");
         console.log(`   Title: ${content.title}`);
         console.log(`   Reviews: ${content.reviews.length} items`);
         console.log(`   Overall rating: ${content.overall_rating}`);
-        
+
         // Check if reviews have required fields (no image_url)
-        const validReviews = content.reviews.filter(review => 
-          review.name && 
-          typeof review.rating === 'number' && 
-          review.rating >= 1 && review.rating <= 5 &&
-          review.text && 
-          review.date &&
-          typeof review.verified === 'boolean'
+        const validReviews = content.reviews.filter(
+          (review) =>
+            review.name &&
+            typeof review.rating === "number" &&
+            review.rating >= 1 &&
+            review.rating <= 5 &&
+            review.text &&
+            review.date &&
+            typeof review.verified === "boolean",
         );
 
         if (validReviews.length === content.reviews.length) {
           console.log("✅ All reviews have required fields");
         } else {
-          console.log(`❌ ${content.reviews.length - validReviews.length} reviews missing required fields`);
+          console.log(
+            `❌ ${content.reviews.length - validReviews.length} reviews missing required fields`,
+          );
           allTestsPassed = false;
         }
 
         // Check that no reviews have image_url (should be handled by component)
-        const reviewsWithImages = content.reviews.filter(review => review.image_url);
+        const reviewsWithImages = content.reviews.filter(
+          (review) => review.image_url,
+        );
         if (reviewsWithImages.length === 0) {
           console.log("✅ Reviews correctly have no image_url fields");
         } else {
-          console.log("⚠️  Some reviews have image_url fields (should be removed)");
+          console.log(
+            "⚠️  Some reviews have image_url fields (should be removed)",
+          );
         }
       } else {
         console.log("❌ Customer reviews array is invalid or insufficient");
@@ -171,9 +184,9 @@ async function testFrontendBackendSync() {
   // Test 4: Real-time subscription test
   try {
     console.log("4️⃣ Testing Real-time Subscription...");
-    
+
     let subscriptionWorked = false;
-    
+
     const channel = supabase
       .channel("test_realtime_sync")
       .on(
@@ -186,25 +199,29 @@ async function testFrontendBackendSync() {
         (payload) => {
           console.log("✅ Real-time subscription received update");
           subscriptionWorked = true;
-        }
+        },
       )
       .subscribe((status) => {
         console.log(`📡 Subscription status: ${status}`);
       });
 
     // Wait for subscription to establish
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Make a small update to test real-time
     const { error: updateError } = await supabase
       .from("hero_section")
       .update({
         content: {
-          ...((await supabase.from("hero_section").select("content").single()).data?.content || {}),
-          test_timestamp: new Date().toISOString()
-        }
+          ...((await supabase.from("hero_section").select("content").single())
+            .data?.content || {}),
+          test_timestamp: new Date().toISOString(),
+        },
       })
-      .eq("id", (await supabase.from("hero_section").select("id").single()).data?.id);
+      .eq(
+        "id",
+        (await supabase.from("hero_section").select("id").single()).data?.id,
+      );
 
     if (updateError) {
       console.log("❌ Real-time test update failed:", updateError.message);
@@ -212,15 +229,16 @@ async function testFrontendBackendSync() {
     }
 
     // Wait for real-time event
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Cleanup
     supabase.removeChannel(channel);
 
     if (!subscriptionWorked) {
-      console.log("⚠️  Real-time subscription may not be working (normal if just set up)");
+      console.log(
+        "⚠️  Real-time subscription may not be working (normal if just set up)",
+      );
     }
-
   } catch (error) {
     console.log("❌ Real-time test failed:", error.message);
     allTestsPassed = false;
@@ -230,14 +248,20 @@ async function testFrontendBackendSync() {
 
   // Final result
   if (allTestsPassed) {
-    console.log("🎉 ALL TESTS PASSED! Frontend-Backend sync should work correctly.");
+    console.log(
+      "🎉 ALL TESTS PASSED! Frontend-Backend sync should work correctly.",
+    );
     console.log("");
-    console.log("✅ Trust section (Walmart Info) - Fixed nested object structure");
+    console.log(
+      "✅ Trust section (Walmart Info) - Fixed nested object structure",
+    );
     console.log("✅ Product Gallery - Fixed images array handling");
     console.log("✅ Customer Reviews - Fixed reviews array (no image_url)");
     console.log("✅ Real-time updates - Subscription mechanism working");
     console.log("");
-    console.log("🚀 The admin panel changes should now appear on the frontend!");
+    console.log(
+      "🚀 The admin panel changes should now appear on the frontend!",
+    );
   } else {
     console.log("❌ Some tests failed. Please check the issues above.");
   }

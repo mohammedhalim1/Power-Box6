@@ -47,14 +47,22 @@ const defaultProductGalleryData: ProductGalleryData = {
 };
 
 // Safe merge function that preserves structure
-function safelyMergeGalleryData(defaultData: ProductGalleryData, contentData: any): ProductGalleryData {
-  if (!contentData || typeof contentData !== 'object') {
+function safelyMergeGalleryData(
+  defaultData: ProductGalleryData,
+  contentData: any,
+): ProductGalleryData {
+  if (!contentData || typeof contentData !== "object") {
     return defaultData;
   }
 
   return {
-    title: typeof contentData.title === 'string' ? contentData.title : defaultData.title,
-    images: Array.isArray(contentData.images) ? contentData.images : defaultData.images,
+    title:
+      typeof contentData.title === "string"
+        ? contentData.title
+        : defaultData.title,
+    images: Array.isArray(contentData.images)
+      ? contentData.images
+      : defaultData.images,
   };
 }
 
@@ -87,7 +95,10 @@ export function ProductGalleryProvider({ children }: { children: ReactNode }) {
 
       if (data && data.content) {
         // Use safe merge instead of shallow spread
-        const mergedData = safelyMergeGalleryData(defaultProductGalleryData, data.content);
+        const mergedData = safelyMergeGalleryData(
+          defaultProductGalleryData,
+          data.content,
+        );
         setProductGalleryData(mergedData);
       } else {
         setProductGalleryData(defaultProductGalleryData);
@@ -128,7 +139,10 @@ export function ProductGalleryProvider({ children }: { children: ReactNode }) {
         (payload) => {
           console.log("Product gallery updated:", payload);
           if (payload.new && payload.new.content) {
-            const mergedData = safelyMergeGalleryData(defaultProductGalleryData, payload.new.content);
+            const mergedData = safelyMergeGalleryData(
+              defaultProductGalleryData,
+              payload.new.content,
+            );
             setProductGalleryData(mergedData);
           }
         },

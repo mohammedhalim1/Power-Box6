@@ -55,21 +55,34 @@ const defaultTrustData: TrustData = {
 };
 
 // Safe merge function that preserves nested object structure
-function safelyMergeTrustData(defaultData: TrustData, contentData: any): TrustData {
-  if (!contentData || typeof contentData !== 'object') {
+function safelyMergeTrustData(
+  defaultData: TrustData,
+  contentData: any,
+): TrustData {
+  if (!contentData || typeof contentData !== "object") {
     return defaultData;
   }
 
   return {
-    title: typeof contentData.title === 'string' ? contentData.title : defaultData.title,
+    title:
+      typeof contentData.title === "string"
+        ? contentData.title
+        : defaultData.title,
     seller_info: {
       name: contentData.seller_info?.name ?? defaultData.seller_info.name,
-      rating: typeof contentData.seller_info?.rating === 'number' ? contentData.seller_info.rating : defaultData.seller_info.rating,
-      reviews_count: typeof contentData.seller_info?.reviews_count === 'number' ? contentData.seller_info.reviews_count : defaultData.seller_info.reviews_count,
+      rating:
+        typeof contentData.seller_info?.rating === "number"
+          ? contentData.seller_info.rating
+          : defaultData.seller_info.rating,
+      reviews_count:
+        typeof contentData.seller_info?.reviews_count === "number"
+          ? contentData.seller_info.reviews_count
+          : defaultData.seller_info.reviews_count,
     },
     walmart_info: {
       text: contentData.walmart_info?.text ?? defaultData.walmart_info.text,
-      subtext: contentData.walmart_info?.subtext ?? defaultData.walmart_info.subtext,
+      subtext:
+        contentData.walmart_info?.subtext ?? defaultData.walmart_info.subtext,
     },
     guarantee: {
       text: contentData.guarantee?.text ?? defaultData.guarantee.text,
@@ -125,7 +138,9 @@ export function TrustProvider({ children }: { children: ReactNode }) {
         seller_info: {
           name: newData.seller_info?.name ?? prev.seller_info.name,
           rating: newData.seller_info?.rating ?? prev.seller_info.rating,
-          reviews_count: newData.seller_info?.reviews_count ?? prev.seller_info.reviews_count,
+          reviews_count:
+            newData.seller_info?.reviews_count ??
+            prev.seller_info.reviews_count,
         },
         walmart_info: {
           text: newData.walmart_info?.text ?? prev.walmart_info.text,
@@ -155,7 +170,10 @@ export function TrustProvider({ children }: { children: ReactNode }) {
         (payload) => {
           console.log("Trust section updated:", payload);
           if (payload.new && payload.new.content) {
-            const mergedData = safelyMergeTrustData(defaultTrustData, payload.new.content);
+            const mergedData = safelyMergeTrustData(
+              defaultTrustData,
+              payload.new.content,
+            );
             setTrustData(mergedData);
           }
         },

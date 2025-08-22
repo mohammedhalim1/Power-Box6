@@ -80,16 +80,30 @@ const defaultReviewsData: ReviewsData = {
 };
 
 // Safe merge function that preserves structure
-function safelyMergeReviewsData(defaultData: ReviewsData, contentData: any): ReviewsData {
-  if (!contentData || typeof contentData !== 'object') {
+function safelyMergeReviewsData(
+  defaultData: ReviewsData,
+  contentData: any,
+): ReviewsData {
+  if (!contentData || typeof contentData !== "object") {
     return defaultData;
   }
 
   return {
-    title: typeof contentData.title === 'string' ? contentData.title : defaultData.title,
-    overall_rating: typeof contentData.overall_rating === 'number' ? contentData.overall_rating : defaultData.overall_rating,
-    total_reviews: typeof contentData.total_reviews === 'number' ? contentData.total_reviews : defaultData.total_reviews,
-    reviews: Array.isArray(contentData.reviews) ? contentData.reviews : defaultData.reviews,
+    title:
+      typeof contentData.title === "string"
+        ? contentData.title
+        : defaultData.title,
+    overall_rating:
+      typeof contentData.overall_rating === "number"
+        ? contentData.overall_rating
+        : defaultData.overall_rating,
+    total_reviews:
+      typeof contentData.total_reviews === "number"
+        ? contentData.total_reviews
+        : defaultData.total_reviews,
+    reviews: Array.isArray(contentData.reviews)
+      ? contentData.reviews
+      : defaultData.reviews,
   };
 }
 
@@ -120,7 +134,10 @@ export function ReviewsProvider({ children }: { children: ReactNode }) {
 
       if (data && data.content) {
         // Use safe merge instead of shallow spread
-        const mergedData = safelyMergeReviewsData(defaultReviewsData, data.content);
+        const mergedData = safelyMergeReviewsData(
+          defaultReviewsData,
+          data.content,
+        );
         setReviewsData(mergedData);
       } else {
         setReviewsData(defaultReviewsData);
@@ -143,7 +160,9 @@ export function ReviewsProvider({ children }: { children: ReactNode }) {
         title: newData.title ?? prev.title,
         overall_rating: newData.overall_rating ?? prev.overall_rating,
         total_reviews: newData.total_reviews ?? prev.total_reviews,
-        reviews: Array.isArray(newData.reviews) ? newData.reviews : prev.reviews,
+        reviews: Array.isArray(newData.reviews)
+          ? newData.reviews
+          : prev.reviews,
       };
     });
   };
@@ -164,7 +183,10 @@ export function ReviewsProvider({ children }: { children: ReactNode }) {
         (payload) => {
           console.log("Customer reviews updated:", payload);
           if (payload.new && payload.new.content) {
-            const mergedData = safelyMergeReviewsData(defaultReviewsData, payload.new.content);
+            const mergedData = safelyMergeReviewsData(
+              defaultReviewsData,
+              payload.new.content,
+            );
             setReviewsData(mergedData);
           }
         },
