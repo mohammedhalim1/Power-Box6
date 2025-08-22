@@ -314,32 +314,59 @@ CREATE POLICY "Enable read access for all users" ON customer_reviews FOR SELECT 
 CREATE POLICY "Enable all operations for service role" ON customer_reviews FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
 CREATE POLICY "Enable all operations for authenticated users" ON customer_reviews FOR ALL USING (auth.role() = 'authenticated');
 
--- Insert exact frontend content
+-- Insert exact frontend content with 6 complete reviews including images
 INSERT INTO customer_reviews (content) VALUES ('{
     "title": "What Our Customers Say",
     "overall_rating": 4.6,
-    "total_reviews": 23,
+    "total_reviews": 27,
     "reviews": [
         {
             "name": "Sarah M.",
             "rating": 5,
             "text": "Amazing variety! Perfect for our office team. Everyone loved the selection of snacks.",
             "date": "2 weeks ago",
-            "verified": true
+            "verified": true,
+            "image_url": "https://images.pexels.com/photos/8872492/pexels-photo-8872492.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop"
         },
         {
             "name": "Mike D.",
             "rating": 5,
             "text": "Great gift idea! Sent this to my college son and he was thrilled with all the different snacks.",
             "date": "1 month ago",
-            "verified": true
+            "verified": true,
+            "image_url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&h=150&q=80"
         },
         {
             "name": "Lisa K.",
             "rating": 4,
             "text": "Good quality snacks and fast delivery. Would definitely order again.",
             "date": "3 weeks ago",
-            "verified": true
+            "verified": true,
+            "image_url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&h=150&q=80"
+        },
+        {
+            "name": "James T.",
+            "rating": 5,
+            "text": "Excellent quality and presentation. The packaging is beautiful and the snacks are fresh and delicious.",
+            "date": "1 week ago",
+            "verified": true,
+            "image_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&h=150&q=80"
+        },
+        {
+            "name": "Emily R.",
+            "rating": 5,
+            "text": "Perfect for our company break room! Everyone keeps asking where we got these amazing snacks.",
+            "date": "5 days ago",
+            "verified": true,
+            "image_url": "https://images.pexels.com/photos/1181695/pexels-photo-1181695.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop"
+        },
+        {
+            "name": "David C.",
+            "rating": 4,
+            "text": "Great variety and fast shipping. My kids love the breakfast bars and I enjoy the healthier options.",
+            "date": "4 days ago",
+            "verified": true,
+            "image_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&h=150&q=80"
         }
     ]
 }'::jsonb) ON CONFLICT DO NOTHING;
