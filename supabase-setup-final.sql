@@ -262,11 +262,12 @@ CREATE POLICY "Enable read access for all users" ON offer_pricing FOR SELECT USI
 CREATE POLICY "Enable all operations for service role" ON offer_pricing FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
 CREATE POLICY "Enable all operations for authenticated users" ON offer_pricing FOR ALL USING (auth.role() = 'authenticated');
 
--- Insert exact frontend content
+-- Insert exact frontend content with image_url
 INSERT INTO offer_pricing (content) VALUES ('{
     "title": "Ready to Fuel Your Day?",
     "subtitle": "Get your 42-count nutritious snack box today!",
     "sale_price": 31.95,
+    "image_url": "https://cdn.builder.io/api/v1/image/assets%2F84282e2d620247d2b8d8845fda2c790e%2F79d471e5bc56457eb2c3b1c3eb6586ae?format=webp&width=800",
     "benefits": [
         "42 premium snacks included",
         "Fresh & high-quality snacks from top brands",
@@ -711,7 +712,7 @@ SELECT
 -- • Hero Section (title, pricing, CTAs, images, ratings)
 -- • Why Choose Section (benefits with images and colors)
 -- • Product Gallery (multiple product images)
--- • Trust Section (seller info, guarantees, Walmart integration)
+-- �� Trust Section (seller info, guarantees, Walmart integration)
 -- • Offer Pricing (final CTA section with pricing)
 -- • Customer Reviews (testimonials with ratings)
 -- • Footer (social media links)
