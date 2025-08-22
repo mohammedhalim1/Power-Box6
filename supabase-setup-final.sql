@@ -747,9 +747,9 @@ SELECT
         ELSE '❌'
     END as rating_valid,
     CASE
-        WHEN review->>'image_url' IS NOT NULL AND review->>'image_url' != '' THEN '✅'
+        WHEN review->>'verified' = 'true' THEN '✅'
         ELSE '❌'
-    END as has_image,
+    END as is_verified,
     LEFT(review->>'text', 50) || '...' as comment_preview
 FROM (
     SELECT
