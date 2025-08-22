@@ -686,7 +686,7 @@ WHERE id = 'images';
 -- SPECIFIC FRONTEND MATCHING VERIFICATION
 -- =====================================================
 
--- Verify Customer Reviews: 6 valid records with images and valid ratings
+-- Verify Customer Reviews: 6 valid records with valid ratings and required fields
 SELECT
     'CUSTOMER REVIEWS VERIFICATION' as check_type,
     CASE
@@ -694,26 +694,29 @@ SELECT
         ELSE '❌ INCORRECT REVIEW COUNT: ' || review_count
     END as review_count_status,
     CASE
-        WHEN valid_ratings = 6 THEN '✅ ALL RATINGS VALID (0-5)'
+        WHEN valid_ratings = 6 THEN '✅ ALL RATINGS VALID (1-5)'
         ELSE '❌ INVALID RATINGS: ' || (6 - valid_ratings) || ' reviews have invalid ratings'
     END as rating_validation,
     CASE
-        WHEN reviews_with_images = 6 THEN '✅ ALL REVIEWS HAVE IMAGES'
-        ELSE '❌ MISSING IMAGES: ' || (6 - reviews_with_images) || ' reviews without images'
-    END as image_validation
+        WHEN complete_reviews = 6 THEN '✅ ALL REVIEWS COMPLETE'
+        ELSE '❌ INCOMPLETE REVIEWS: ' || (6 - complete_reviews) || ' reviews missing required fields'
+    END as completeness_validation
 FROM (
     SELECT
         jsonb_array_length(content->'reviews') as review_count,
         (
             SELECT COUNT(*)
             FROM jsonb_array_elements(content->'reviews') as review
-            WHERE (review->>'rating')::int BETWEEN 0 AND 5
+            WHERE (review->>'rating')::int BETWEEN 1 AND 5
         ) as valid_ratings,
         (
             SELECT COUNT(*)
             FROM jsonb_array_elements(content->'reviews') as review
-            WHERE review->>'image_url' IS NOT NULL AND review->>'image_url' != ''
-        ) as reviews_with_images
+            WHERE review->>'name' IS NOT NULL AND review->>'name' != ''
+              AND review->>'text' IS NOT NULL AND review->>'text' != ''
+              AND review->>'date' IS NOT NULL AND review->>'date' != ''
+              AND review->>'verified' IS NOT NULL
+        ) as complete_reviews
     FROM customer_reviews
     LIMIT 1
 );
