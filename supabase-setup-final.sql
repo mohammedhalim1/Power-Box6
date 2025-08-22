@@ -644,10 +644,10 @@ CREATE TRIGGER update_seo_settings_updated_at
 -- Verify all tables have data
 SELECT 'VERIFICATION RESULTS' as check_type, 'All Tables Created Successfully' as status;
 
-SELECT 
+SELECT
     'TABLE VERIFICATION' as check_type,
     table_name,
-    CASE 
+    CASE
         WHEN record_count > 0 THEN '✅ HAS DATA'
         ELSE '❌ NO DATA'
     END as status,
@@ -676,17 +676,92 @@ FROM (
 ORDER BY table_name;
 
 -- Verify storage bucket
-SELECT 
+SELECT
     'STORAGE VERIFICATION' as check_type,
     name as bucket_name,
-    CASE 
+    CASE
         WHEN public = true THEN '✅ PUBLIC ACCESS'
         ELSE '❌ NOT PUBLIC'
     END as public_status,
     file_size_limit,
     allowed_mime_types
-FROM storage.buckets 
+FROM storage.buckets
 WHERE id = 'images';
+
+-- =====================================================
+-- SPECIFIC FRONTEND MATCHING VERIFICATION
+-- =====================================================
+
+-- Verify Customer Reviews: 6 valid records with images and valid ratings
+SELECT
+    'CUSTOMER REVIEWS VERIFICATION' as check_type,
+    CASE
+        WHEN review_count = 6 THEN '✅ EXACTLY 6 REVIEWS'
+        ELSE '❌ INCORRECT REVIEW COUNT: ' || review_count
+    END as review_count_status,
+    CASE
+        WHEN valid_ratings = 6 THEN '✅ ALL RATINGS VALID (0-5)'
+        ELSE '❌ INVALID RATINGS: ' || (6 - valid_ratings) || ' reviews have invalid ratings'
+    END as rating_validation,
+    CASE
+        WHEN reviews_with_images = 6 THEN '✅ ALL REVIEWS HAVE IMAGES'
+        ELSE '❌ MISSING IMAGES: ' || (6 - reviews_with_images) || ' reviews without images'
+    END as image_validation
+FROM (
+    SELECT
+        jsonb_array_length(content->'reviews') as review_count,
+        (
+            SELECT COUNT(*)
+            FROM jsonb_array_elements(content->'reviews') as review
+            WHERE (review->>'rating')::int BETWEEN 0 AND 5
+        ) as valid_ratings,
+        (
+            SELECT COUNT(*)
+            FROM jsonb_array_elements(content->'reviews') as review
+            WHERE review->>'image_url' IS NOT NULL AND review->>'image_url' != ''
+        ) as reviews_with_images
+    FROM customer_reviews
+    LIMIT 1
+);
+
+-- Verify Offer Pricing: Has valid image_url
+SELECT
+    'OFFER PRICING VERIFICATION' as check_type,
+    CASE
+        WHEN content->>'image_url' IS NOT NULL AND content->>'image_url' != '' THEN '✅ IMAGE URL PRESENT'
+        ELSE '❌ MISSING IMAGE URL'
+    END as image_status,
+    CASE
+        WHEN (content->>'sale_price')::numeric > 0 THEN '✅ VALID PRICE'
+        ELSE '❌ INVALID PRICE'
+    END as price_status,
+    content->>'image_url' as image_url_value
+FROM offer_pricing
+LIMIT 1;
+
+-- Verify Review Details (individual review validation)
+SELECT
+    'INDIVIDUAL REVIEW VALIDATION' as check_type,
+    review_number,
+    review->>'name' as customer_name,
+    (review->>'rating')::int as rating,
+    CASE
+        WHEN (review->>'rating')::int BETWEEN 1 AND 5 THEN '✅'
+        ELSE '❌'
+    END as rating_valid,
+    CASE
+        WHEN review->>'image_url' IS NOT NULL AND review->>'image_url' != '' THEN '✅'
+        ELSE '❌'
+    END as has_image,
+    LEFT(review->>'text', 50) || '...' as comment_preview
+FROM (
+    SELECT
+        ROW_NUMBER() OVER() as review_number,
+        review
+    FROM customer_reviews,
+    jsonb_array_elements(content->'reviews') as review
+) as review_details
+ORDER BY review_number;
 
 -- =====================================================
 -- 14. FINAL SUCCESS MESSAGE
@@ -712,7 +787,7 @@ SELECT
 -- • Hero Section (title, pricing, CTAs, images, ratings)
 -- • Why Choose Section (benefits with images and colors)
 -- • Product Gallery (multiple product images)
--- �� Trust Section (seller info, guarantees, Walmart integration)
+-- • Trust Section (seller info, guarantees, Walmart integration)
 -- • Offer Pricing (final CTA section with pricing)
 -- • Customer Reviews (testimonials with ratings)
 -- • Footer (social media links)
