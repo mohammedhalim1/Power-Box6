@@ -46,6 +46,26 @@ const defaultProductGalleryData: ProductGalleryData = {
   ],
 };
 
+// Safe merge function that preserves structure
+function safelyMergeGalleryData(
+  defaultData: ProductGalleryData,
+  contentData: any,
+): ProductGalleryData {
+  if (!contentData || typeof contentData !== "object") {
+    return defaultData;
+  }
+
+  return {
+    title:
+      typeof contentData.title === "string"
+        ? contentData.title
+        : defaultData.title,
+    images: Array.isArray(contentData.images)
+      ? contentData.images
+      : defaultData.images,
+  };
+}
+
 const ProductGalleryContext = createContext<
   ProductGalleryContextType | undefined
 >(undefined);
@@ -68,26 +88,39 @@ export function ProductGalleryProvider({ children }: { children: ReactNode }) {
         } else {
           logDatabaseError("Error loading product gallery data", error);
         }
+        // Always ensure we have valid data
+        setProductGalleryData(defaultProductGalleryData);
         return;
       }
 
       if (data && data.content) {
-        setProductGalleryData({
-          ...defaultProductGalleryData,
-          ...data.content,
-        });
+        // Use safe merge instead of shallow spread
+        const mergedData = safelyMergeGalleryData(
+          defaultProductGalleryData,
+          data.content,
+        );
+        setProductGalleryData(mergedData);
+      } else {
+        setProductGalleryData(defaultProductGalleryData);
       }
     } catch (error) {
       console.info(
         "Using default product gallery data due to database connection issue",
       );
+      setProductGalleryData(defaultProductGalleryData);
     } finally {
       setIsLoading(false);
     }
   };
 
   const updateProductGalleryData = (newData: Partial<ProductGalleryData>) => {
-    setProductGalleryData((prev) => ({ ...prev, ...newData }));
+    setProductGalleryData((prev) => {
+      // Safe update that preserves structure
+      return {
+        title: newData.title ?? prev.title,
+        images: Array.isArray(newData.images) ? newData.images : prev.images,
+      };
+    });
   };
 
   useEffect(() => {
@@ -106,10 +139,11 @@ export function ProductGalleryProvider({ children }: { children: ReactNode }) {
         (payload) => {
           console.log("Product gallery updated:", payload);
           if (payload.new && payload.new.content) {
-            setProductGalleryData({
-              ...defaultProductGalleryData,
-              ...payload.new.content,
-            });
+            const mergedData = safelyMergeGalleryData(
+              defaultProductGalleryData,
+              payload.new.content,
+            );
+            setProductGalleryData(mergedData);
           }
         },
       )
